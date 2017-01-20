@@ -39,10 +39,11 @@ int initServer(int port) {
 
     // Start to waiting new connections
     waiting = 1;
-    printf("LOG_INFO: Started server\n");
+    printf("LOG_INFO: Started server in port %d\n", port);
 
     return sockfd;
 }
+
 
 void closeServer(int sockfd) {
 
@@ -54,32 +55,50 @@ void closeServer(int sockfd) {
     printf("LOG_INFO: Server closed\n");
 }
 
-void waitForRequests(int sockfd, struct sockaddr_in *client) {
+
+void listenMessages(int fd) {
+
+    char buffer[256];
+    bzero(buffer, 256);
+    ssize_t len;
+    if (len = read(fd, buffer, 255) < 0) {
+        printf("LOG_ERR: Failed to read message from client");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Client says: %s\n", buffer);
+}
+
+
+void sendMessage(int fd, char *message) {
+
+    if (write(fd, message, strlen(message)) < 0) {
+        printf("LOG_ERR: Failed to send message to client");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+void waitForRequests(int sockfd) {
+
+    struct sockaddr_in client;
+    socklen_t clientlen = sizeof(client);
 
     // Accept connection
-    socklen_t clientlen = sizeof(client);
-    int newsockfd = accept(sockfd, (struct sockaddr*)client, &clientlen);
+    int newsockfd = accept(sockfd, (struct sockaddr*)&client, &clientlen);
 
     if (newsockfd < 0) {
         printf("LOG_ERROR: Failed to accept connection\n");
         exit(EXIT_FAILURE);
     }
 
-    printf("LOG_NOTICE: New connection from %s\n", inet_ntoa(client->sin_addr));
+    printf("LOG_NOTICE: New connection from %s\n", inet_ntoa(client.sin_addr));
+    sendMessage(newsockfd, (char*)"Welcome!");
 
-    // Read received data
-    char buffer[256];
-    if (read(newsockfd, buffer, 255) < 0) {
-        printf("LOG_ERROR: Failed read content\n");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("NEW MESSAGE: %s\n", buffer);
-
+    // Listen client messages
+    listenMessages(newsockfd);
 
     close(newsockfd);
-    waiting = 0;
-    return;
 }
 
 
@@ -88,11 +107,9 @@ int runServer(int port) {
     // Get TCP socket
     int sockfd = initServer(port);
 
-    //
-    struct sockaddr_in client;
-
+    // Petitions loop
     while(waiting) {
-        waitForRequests(sockfd, &client);
+        waitForRequests(sockfd);
     }
 
     // Close and free

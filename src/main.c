@@ -10,11 +10,11 @@ int main(int argc, char *argv[]) {
 
     // Parse arguments
     if (argc > 1) {
-        if ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--port") == 0)) {
+        if ((!strcmp(argv[1], "-p")) || (!strcmp(argv[1], "--port"))) {
             printf("%d\n", runServer(atoi(argv[2])));
-        } else if ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)) {
+        } else if ((!strcmp(argv[1], "-?")) || (!strcmp(argv[1], "--help"))) {
             showHelp();
-        } else if ((strcmp(argv[1], "-v") == 0) || (strcmp(argv[1], "--version") == 0)) {
+        } else if ((!strcmp(argv[1], "-v")) || (!strcmp(argv[1], "--version"))) {
             showVersion();
         } else {
             printf("Unknown option '%s'\nTry: %s --help\n", argv[1], APP);

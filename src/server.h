@@ -33,6 +33,10 @@ static int waiting = 0;
 int initServer(int port);
 void closeServer(int sockfd);
 
+void listenMessages(int fd);
+void sendMessage(int fd, char *message);
+void waitForRequests(int sockfd);
+
 // Server big loop
 int runServer(int port);
 
