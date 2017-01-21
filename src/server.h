@@ -15,16 +15,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <syslog.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
 
-
-// General
-#define APP "watchman-stats"
-#define VERSION "0.1.0"
 
 // Utilities
 #define MAX_CONNECTIONS 5
@@ -44,9 +41,5 @@ void waitForRequests(int sockfd);
 
 // Server big loop
 int runServer(int port);
-
-// Other
-void showHelp();
-void showVersion();
 
 #endif /* SERVER_H */

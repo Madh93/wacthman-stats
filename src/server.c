@@ -10,11 +10,11 @@
 // Signal handling
 
 void signalHandler(int signo) {
-    if (signo == SIGINT) {
-        printf("LOG_INFO: Received SIGINT");
+    if (signo == SIGKILL) {
+        syslog(LOG_INFO, "Received SIGKILL");
         waiting = 0;
     } else {
-        printf("LOG_ERR: Received unknown signal");
+        syslog(LOG_ERR, "Received unknown signal");
         exit(EXIT_FAILURE);
     }
 }
@@ -28,7 +28,7 @@ int initServer(int port) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0) {
-        printf("LOG_NOTICE: Failed to create socket\n");
+        syslog(LOG_ERR, "Failed to create socket");
         exit(EXIT_FAILURE);
     }
 
@@ -42,19 +42,19 @@ int initServer(int port) {
 
     // Bind name to socket
     if (bind(sockfd, (struct sockaddr*)&server, sizeof(server)) < 0) {
-        printf("LOG_ERROR: Failed to bind to socket\n");
+        syslog(LOG_ERR, "Failed to bind to socket");
         exit(EXIT_FAILURE);
     }
 
     // Listen for connections
     if (listen(sockfd, MAX_CONNECTIONS) < 0) {
-        printf("LOG_ERROR: Failed to listen on socket\n");
+        syslog(LOG_ERR, "Failed to listen on socket");
         exit(EXIT_FAILURE);
     }
 
     // Start to waiting new connections
     waiting = 1;
-    printf("LOG_INFO: Started server in port %d\n", port);
+    syslog(LOG_INFO, "Started server in port %d\n", port);
 
     return sockfd;
 }
@@ -63,18 +63,18 @@ int initServer(int port) {
 void closeServer(int sockfd) {
 
     if (close(sockfd) < 0) {
-        printf("LOG_ERR: Failed to close server\n");
+        syslog(LOG_ERR, "Failed to close server");
         exit(EXIT_FAILURE);
     }
 
-    printf("LOG_INFO: Server closed\n");
+    syslog(LOG_INFO, "Server closed");
 }
 
 
 void sendMessage(int fd, char *message) {
 
     if (write(fd, message, strlen(message)) < 0) {
-        printf("LOG_ERR: Failed to send message to client\n");
+        syslog(LOG_ERR, "Failed to send message to client");
         exit(EXIT_FAILURE);
     }
 }
@@ -89,7 +89,7 @@ void waitForRequests(int sockfd) {
     // Handling multiple connections
     pthread_t thread;
     if (pthread_create(&thread, NULL, runConnection, (void*)&newsockfd) < 0) {
-        printf("LOG_ERR: Failed to create threaded connection\n");
+        syslog(LOG_ERR, "Failed to create threaded connection");
         exit(EXIT_FAILURE);
     }
 }
@@ -112,18 +112,4 @@ int runServer(int port) {
     closeServer(sockfd);
 
     return 0;
-}
-
-
-void showHelp() {
-    printf("%s: Stats server for Watchman\n", APP);
-    printf("\nUsage: %s [options]\n", APP);
-    printf("\nOptions:\n");
-    printf("  -p, --port          Number port\n");
-    printf("  -h, --help          Show this help\n");
-    printf("  -v, --version       Show version\n");
-}
-
-void showVersion() {
-    printf("%s %s\n", APP, VERSION);
 }

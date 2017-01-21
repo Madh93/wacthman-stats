@@ -4,14 +4,14 @@
 // VERSION       : 0.1.0
 // LICENSE       : GNU General Public License v3
 
-#include "server.h"
+#include "watchman-stats.h"
 
 int main(int argc, char *argv[]) {
 
     // Parse arguments
     if (argc > 1) {
         if ((!strcmp(argv[1], "-p")) || (!strcmp(argv[1], "--port"))) {
-            printf("%d\n", runServer(atoi(argv[2])));
+            printf("%d\n", demonize(atoi(argv[2])));
         } else if ((!strcmp(argv[1], "-?")) || (!strcmp(argv[1], "--help"))) {
             showHelp();
         } else if ((!strcmp(argv[1], "-v")) || (!strcmp(argv[1], "--version"))) {

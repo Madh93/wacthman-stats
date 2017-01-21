@@ -53,7 +53,7 @@ stop() {
   fi
 
   echo "Stopping $NAME..."
-  pkill -F $PIDFILE && rm -f $PIDFILE
+  pkill -SIGKILL -F $PIDFILE && rm -f $PIDFILE
   echo "$NAME stopped"
 }
 
