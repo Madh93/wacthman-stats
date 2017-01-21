@@ -9,6 +9,7 @@
 #define SERVER_H
 
 // To run server
+#include "connection.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 
 // General
@@ -37,7 +39,6 @@ void signalHandler(int signo);
 int initServer(int port);
 void closeServer(int sockfd);
 
-int listenMessages(int fd);
 void sendMessage(int fd, char *message);
 void waitForRequests(int sockfd);
 

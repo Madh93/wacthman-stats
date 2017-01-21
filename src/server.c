@@ -71,29 +71,10 @@ void closeServer(int sockfd) {
 }
 
 
-int listenMessages(int fd) {
-
-    char buffer[256];
-    memset(buffer, 0, sizeof(buffer));
-
-    ssize_t count = read(fd, buffer, sizeof(buffer));
-
-    if (count < 0) {
-        printf("LOG_ERR: Failed to read message from client\n");
-    } else if (count == 0) {
-        printf("LOG_INFO: Client has disconnected\n");
-    } else {
-        printf("LOG_INFO: Client says: %s\n", buffer);
-    }
-
-    return count;
-}
-
-
 void sendMessage(int fd, char *message) {
 
     if (write(fd, message, strlen(message)) < 0) {
-        printf("LOG_ERR: Failed to send message to client");
+        printf("LOG_ERR: Failed to send message to client\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -101,24 +82,16 @@ void sendMessage(int fd, char *message) {
 
 void waitForRequests(int sockfd) {
 
-    struct sockaddr_in client;
-    socklen_t clientlen = sizeof(client);
-
-    // Accept connection
-    int newsockfd = accept(sockfd, (struct sockaddr*)&client, &clientlen);
-
-    if (newsockfd < 0) {
-        printf("LOG_ERROR: Failed to accept connection\n");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("LOG_NOTICE: New connection from %s\n", inet_ntoa(client.sin_addr));
+    // Initialize a new client connection
+    int newsockfd = initConnection(sockfd);
     sendMessage(newsockfd, (char*)"Welcome!");
 
-    // Listen client messages
-    while(listenMessages(newsockfd));
-
-    close(newsockfd);
+    // Handling multiple connections
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, runConnection, (void*)&newsockfd) < 0) {
+        printf("LOG_ERR: Failed to create threaded connection\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 
