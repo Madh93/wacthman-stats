@@ -59,14 +59,17 @@ void closeServer(int sockfd) {
 void listenMessages(int fd) {
 
     char buffer[256];
-    bzero(buffer, 256);
-    ssize_t len;
-    if (len = read(fd, buffer, 255) < 0) {
-        printf("LOG_ERR: Failed to read message from client");
-        exit(EXIT_FAILURE);
-    }
+    memset(buffer, 0, sizeof(buffer));
 
-    printf("Client says: %s\n", buffer);
+    ssize_t count = read(fd, buffer, sizeof(buffer));
+
+    if (count < 0) {
+        printf("LOG_ERR: Failed to read message from client\n");
+    } else if (count == 0) {
+        printf("LOG_INFO: Client has disconnected\n");
+    } else {
+        printf("LOG_INFO: Client says: %s\n", buffer);
+    }
 }
 
 
@@ -96,7 +99,22 @@ void waitForRequests(int sockfd) {
     sendMessage(newsockfd, (char*)"Welcome!");
 
     // Listen client messages
-    listenMessages(newsockfd);
+    char buffer[256];
+    memset(buffer, 0, sizeof(buffer));
+    ssize_t count;
+
+    while (1) {
+        count = read(newsockfd, buffer, sizeof(buffer));
+        if (count < 0) {
+            printf("LOG_ERR: Failed to read message from client\n");
+        } else if (count == 0) {
+            printf("LOG_INFO: Client has disconnected\n");
+            break;
+        } else {
+            printf("LOG_INFO: Client says: %s\n", buffer);
+            memset(buffer, 0, sizeof(buffer));
+        }
+    }
 
     close(newsockfd);
 }
