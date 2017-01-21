@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -29,11 +30,14 @@
 // Monitor status
 static int waiting = 0;
 
+// Signal handling
+void signalHandler(int signo);
+
 // General
 int initServer(int port);
 void closeServer(int sockfd);
 
-void listenMessages(int fd);
+int listenMessages(int fd);
 void sendMessage(int fd, char *message);
 void waitForRequests(int sockfd);
 

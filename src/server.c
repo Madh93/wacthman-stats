@@ -7,6 +7,21 @@
 #include "server.h"
 
 
+// Signal handling
+
+void signalHandler(int signo) {
+    if (signo == SIGINT) {
+        printf("LOG_INFO: Received SIGINT");
+        waiting = 0;
+    } else {
+        printf("LOG_ERR: Received unknown signal");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+// General
+
 int initServer(int port) {
 
     // Create socket
@@ -56,7 +71,7 @@ void closeServer(int sockfd) {
 }
 
 
-void listenMessages(int fd) {
+int listenMessages(int fd) {
 
     char buffer[256];
     memset(buffer, 0, sizeof(buffer));
@@ -70,6 +85,8 @@ void listenMessages(int fd) {
     } else {
         printf("LOG_INFO: Client says: %s\n", buffer);
     }
+
+    return count;
 }
 
 
@@ -99,22 +116,7 @@ void waitForRequests(int sockfd) {
     sendMessage(newsockfd, (char*)"Welcome!");
 
     // Listen client messages
-    char buffer[256];
-    memset(buffer, 0, sizeof(buffer));
-    ssize_t count;
-
-    while (1) {
-        count = read(newsockfd, buffer, sizeof(buffer));
-        if (count < 0) {
-            printf("LOG_ERR: Failed to read message from client\n");
-        } else if (count == 0) {
-            printf("LOG_INFO: Client has disconnected\n");
-            break;
-        } else {
-            printf("LOG_INFO: Client says: %s\n", buffer);
-            memset(buffer, 0, sizeof(buffer));
-        }
-    }
+    while(listenMessages(newsockfd));
 
     close(newsockfd);
 }
@@ -122,10 +124,13 @@ void waitForRequests(int sockfd) {
 
 int runServer(int port) {
 
+    // Register signal SIGTERM and signal handler
+    signal(SIGTERM, signalHandler);
+
     // Get TCP socket
     int sockfd = initServer(port);
 
-    // Petitions loop
+    // Client petitions loop
     while(waiting) {
         waitForRequests(sockfd);
     }
