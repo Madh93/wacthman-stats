@@ -49,7 +49,6 @@ int demonize(int port) {
 
     // Do something interesting
     runServer(port);
-    runServer(port);
 
     // Close logs
     syslog(LOG_NOTICE, "Finished %s", APP);
